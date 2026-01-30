@@ -1,0 +1,45 @@
+{% extends "base.html"%}
+{% block title %} პოსტის შექმნა {% endblock %}
+{% block container %}
+<div class="container-md bg-white mt-4 border rounded shadow-lg">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">📝 ახალი პოსტის შექმნა</h2>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                
+                <div class="mb-3">
+                    <label for="content" class="form-label">პოსტის ტექსტი</label>
+                    {{ form.content(class="form-control", rows="6") }}
+                    {% if form.content.errors %}
+                        <div class="text-danger">
+                            {% for error in form.content.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="images" class="form-label">ფოტოს ატვირთვა (არასავალდებულო)</label>
+                    {{ form.images(class="form-control") }}
+                    {% if form.images.errors %}
+                        <div class="text-danger">
+                            {% for error in form.images.errors %}
+                                <small>{{ error }}</small>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <small class="form-text text-muted">დასაშვებია მხოლოდ PNG, JPG, JPEG ფორმატები</small>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    {{ form.submit(class="btn btn-primary") }}
+                    <a href="/" class="btn btn-secondary">გაუქმება</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

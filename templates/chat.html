@@ -1,0 +1,163 @@
+{% extends "base.html"%}
+{% block title %} ჩატი - {{ other_user.name }} {% endblock %}
+{% block container %}
+<div class="container-md bg-white mt-4 border rounded shadow-lg">
+    <div class="row">
+        <div class="col-12">
+            <!-- Chat Header -->
+            <div class="card-header bg-light d-flex align-items-center">
+                <img src="/static/images/{{ other_user.profile_img }}" alt="{{ other_user.name }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                <div>
+                    <h5 class="mb-0">{{ other_user.name }}</h5>
+                    <small class="text-muted">{{ other_user.role }}</small>
+                </div>
+                <div class="ms-auto">
+                    <a href="/messages" class="btn btn-outline-secondary btn-sm">← უკან</a>
+                </div>
+            </div>
+            
+            <!-- Chat Messages -->
+            <div class="card-body" style="height: 400px; overflow-y: auto;">
+                {% if chat_messages %}
+                    {% for message in chat_messages %}
+                    <div class="d-flex mb-3 {% if message.sender_id == current_user.id %}justify-content-end{% else %}justify-content-start{% endif %}">
+                        {% if message.sender_id != current_user.id %}
+                        <img src="/static/images/{{ message.sender.profile_img }}" alt="{{ message.sender.name }}" class="rounded-circle me-2" style="width: 32px; height: 32px; object-fit: cover;">
+                        {% endif %}
+                        
+                        <div class="max-width-70">
+                            <div class="card {% if message.sender_id == current_user.id %}bg-primary text-white{% else %}bg-light{% endif %}">
+                                <div class="card-body p-2">
+                                    <p class="mb-1">{{ message.content }}</p>
+                                    <small class="{% if message.sender_id == current_user.id %}text-white-50{% else %}text-muted{% endif %}">
+                                        {{ message.created_at.strftime('%H:%M') }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if message.sender_id == current_user.id %}
+                        <img src="/static/images/{{ message.sender.profile_img }}" alt="{{ message.sender.name }}" class="rounded-circle ms-2" style="width: 32px; height: 32px; object-fit: cover;">
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <p class="text-muted">ჯერ შეტყობინებები არ არის. დაიწყეთ საუბარი!</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Message Input -->
+            <div class="card-footer">
+                <form method="POST" id="message-form">
+                    {{ form.hidden_tag() }}
+                    <div class="d-flex">
+                        {{ form.content(class="form-control", placeholder="შეიყვანეთ შეტყობინება...", rows=1, required=True) }}
+                        {{ form.submit(class="btn btn-primary ms-2") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.max-width-70 {
+    max-width: 70%;
+}
+</style>
+
+<script>
+// Auto-scroll to bottom
+function scrollToBottom() {
+    const chatBody = document.querySelector('.card-body');
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+// Send message with AJAX
+document.getElementById('message-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const contentInput = form.querySelector('textarea[name="content"]');
+    const content = contentInput.value.trim();
+    
+    if (!content) return;
+    
+    try {
+        const formData = new FormData(form);
+        const response = await fetch(`/chat/{{ other_user.id }}`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Clear form
+            contentInput.value = '';
+            
+            // Add message to UI immediately
+            const messagesContainer = document.querySelector('.card-body');
+            const newMessage = document.createElement('div');
+            newMessage.className = 'd-flex mb-3 justify-content-end';
+            newMessage.innerHTML = `
+                <div class="max-width-70">
+                    <img src="/static/images/{{ current_user.profile_img }}" alt="{{ current_user.name }}" class="rounded-circle ms-2" style="width: 32px; height: 32px; object-fit: cover;">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body p-2">
+                            <p class="mb-1">${content}</p>
+                            <small class="text-white-50">ახლახანს</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(newMessage);
+            
+            // Scroll to bottom
+            scrollToBottom();
+        } else {
+            alert('შეცდომა: ' + (data.error || 'შეტყობინების გაგზავნა ვერ მოხერხდა'));
+        }
+    } catch (error) {
+        console.error('Error sending message:', error);
+        alert('ქსელური შეცდომა. სცადეთ თავიდან.');
+    }
+});
+
+// Auto-refresh messages every 5 seconds with AJAX
+async function refreshMessages() {
+    try {
+        const response = await fetch(`/chat/{{ other_user.id }}`);
+        const html = await response.text();
+        
+        // Create a temporary DOM element to parse the response
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        
+        // Find the messages container in the response
+        const newMessagesContainer = tempDiv.querySelector('.card-body');
+        const currentMessagesContainer = document.querySelector('.card-body');
+        
+        if (newMessagesContainer && currentMessagesContainer) {
+            // Only update if there are new messages
+            const newMessageCount = newMessagesContainer.querySelectorAll('.d-flex.mb-3').length;
+            const currentMessageCount = currentMessagesContainer.querySelectorAll('.d-flex.mb-3').length;
+            
+            if (newMessageCount > currentMessageCount) {
+                currentMessagesContainer.innerHTML = newMessagesContainer.innerHTML;
+                scrollToBottom();
+            }
+        }
+    } catch (error) {
+        console.error('Error refreshing messages:', error);
+    }
+}
+
+setInterval(refreshMessages, 5000);
+
+// Initial scroll
+document.addEventListener('DOMContentLoaded', scrollToBottom);
+</script>
+{% endblock %}

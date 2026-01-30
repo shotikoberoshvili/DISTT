@@ -1,0 +1,71 @@
+{% extends "base.html"%}
+{% block title %} ნოთიფიკაციები {% endblock %}
+{% block container %}
+<div class="container-md bg-white mt-4 border rounded shadow-lg">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">🔔 ნოთიფიკაციები</h2>
+            
+            {% if notifications %}
+                {% for notification in notifications %}
+                <div class="card mb-3 {% if not notification.is_read %}border-primary bg-light{% endif %}">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        {% if notification.type == 'reaction' %}
+                                            <span class="badge bg-primary me-2">რეაქცია</span>
+                                        {% elif notification.type == 'comment' %}
+                                            <span class="badge bg-info me-2">კომენტარი</span>
+                                        {% elif notification.type == 'friend_request' %}
+                                            <span class="badge bg-success me-2">მეგობრობა</span>
+                                        {% elif notification.type == 'message' %}
+                                            <span class="badge bg-warning me-2">შეტყობინება</span>
+                                        {% endif %}
+                                        
+                                        <h6 class="mb-1">{{ notification.content }}</h6>
+                                        <small class="text-muted">{{ notification.created_at.strftime('%d %b %Y, %H:%M') }}</small>
+                                    </div>
+                                    {% if not notification.is_read %}
+                                    <span class="badge bg-primary">ახალი</span>
+                                    {% endif %}
+                                </div>
+                                
+                                {% if notification.related_user %}
+                                <div class="mt-2">
+                                    <a href="/profile/{{ notification.related_user.id }}" class="text-decoration-none">
+                                        <img src="/static/images/{{ notification.related_user.profile_img }}" alt="{{ notification.related_user.name }}" class="rounded-circle me-2" style="width: 24px; height: 24px; object-fit: cover;">
+                                        {{ notification.related_user.name }}
+                                    </a>
+                                </div>
+                                {% endif %}
+                                
+                                {% if notification.post %}
+                                <div class="mt-2">
+                                    <a href="/#post-{{ notification.post.id }}" class="btn btn-sm btn-outline-primary">პოსტის ნახვა</a>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="ms-3">
+                                <form method="POST" action="/notifications/mark_read/{{ notification.id }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" {% if notification.is_read %}disabled{% endif %}>
+                                        {% if notification.is_read %}წაკითხულია{% else %}მონიშვნა{% endif %}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <p class="text-muted">ნოთიფიკაციები არ არის</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

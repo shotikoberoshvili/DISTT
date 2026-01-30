@@ -1,0 +1,123 @@
+{% extends "base.html"%}
+{% block title %} პარამეტრები {% endblock %}
+{% block container %}
+<div class="container-md bg-white mt-4 border rounded shadow-lg">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">⚙️ პარამეტრები</h2>
+            
+            <!-- Profile Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">👤 პროფილის ინფორმაცია</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <img src="/static/images/{{ current_user.profile_img }}" alt="{{ current_user.name }}" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+                            <h6 class="mt-2">{{ current_user.name }}</h6>
+                            <small class="text-muted">{{ current_user.role }}</small>
+                        </div>
+                        <div class="col-md-9">
+                            <p><strong>ელ.ფოსტა:</strong> {{ current_user.email }}</p>
+                            <p><strong>ტელეფონი:</strong> {{ current_user.phone_number }}</p>
+                            <p><strong>უნივერსიტეტი:</strong> {{ current_user.university or "მითითებული არაა" }}</p>
+                            <p><strong>ფაკულტეტი:</strong> {{ current_user.faculty or "მითითებული არაა" }}</p>
+                            <p><strong>ჩემს შესახებ:</strong> {{ current_user.text or "ინფორმაცია არ არის" }}</p>
+                            <a href="/account" class="btn btn-primary btn-sm">პროფილის რედაქტირება</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Friend Requests -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">👋 მეგობრობის მოთხოვნები</h5>
+                </div>
+                <div class="card-body">
+                    {% if received_requests %}
+                        {% for request in received_requests %}
+                        <div class="d-flex align-items-center justify-content-between mb-3 p-2 border rounded">
+                            <div class="d-flex align-items-center">
+                                <img src="/static/images/{{ request.requester.profile_img }}" alt="{{ request.requester.name }}" class="rounded-circle me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0">{{ request.requester.name }}</h6>
+                                    <small class="text-muted">{{ request.created_at.strftime('%d %b %Y') }}</small>
+                                </div>
+                            </div>
+                            <div>
+                                <a href="/respond_friend_request/{{ request.id }}/accept" class="btn btn-success btn-sm">✓ დადასტურება</a>
+                                <a href="/respond_friend_request/{{ request.id }}/reject" class="btn btn-outline-danger btn-sm">✗ უარყოფა</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">ახალი მოთხოვნები არ არის</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Friends List -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">👥 მეგობრები</h5>
+                </div>
+                <div class="card-body">
+                    {% if friends %}
+                        <div class="row">
+                            {% for friend in friends %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <img src="/static/images/{{ friend.profile_img }}" alt="{{ friend.name }}" class="rounded-circle mb-2" style="width: 60px; height: 60px; object-fit: cover;">
+                                        <h6 class="card-title">{{ friend.name }}</h6>
+                                        <a href="/profile/{{ friend.id }}" class="btn btn-outline-primary btn-sm">პროფილის ნახვა</a>
+                                        <a href="/chat/{{ friend.id }}" class="btn btn-outline-success btn-sm">შეტყობინება</a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">ჯერ მეგობრები არ გყავთ</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- My Posts -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📝 ჩემი პოსტები</h5>
+                </div>
+                <div class="card-body">
+                    {% if user_posts %}
+                        {% for post in user_posts %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <p class="card-text">{{ post.content }}</p>
+                                        <small class="text-muted">{{ post.created_at.strftime('%d %b %Y, %H:%M') }}</small>
+                                        {% if post.updated_at != post.created_at %}
+                                        <small class="text-muted">• განახლდა</small>
+                                        {% endif %}
+                                    </div>
+                                    <div class="ms-3">
+                                        <a href="/edit_post/{{ post.id }}" class="btn btn-sm btn-outline-primary">რედაქტირება</a>
+                                        <a href="/delete_post/{{ post.id }}" class="btn btn-sm btn-outline-danger">წაშლა</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">ჯერ პოსტები არ გაგიზიარებიათ</p>
+                        <a href="/create_post" class="btn btn-primary">პირველი პოსტის შექმნა</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
