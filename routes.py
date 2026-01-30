@@ -13,7 +13,14 @@ import os
 @app.route("/delete/<int:mentor_id>", methods=['GET', 'POST'])
 @login_required
 def delete(mentor_id):
+    if current_user.role != "Admin":
+        flash("მხოლოდ ადმინს შეუძლია მენტორის წაშლა", "danger")
+        return redirect("/")
+    
     mentor = Mentor.query.get(mentor_id)
+    if not mentor:
+        flash("მენტორი ვერ მოიძებნა", "danger")
+        return redirect("/tutors")
 
     db.session.delete(mentor)
     db.session.commit()
