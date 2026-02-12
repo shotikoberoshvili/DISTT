@@ -29,6 +29,13 @@
                     </li>
                     {%endif%}
                 </ul>
+                <!-- Responsive Search Bar -->
+                <div class="d-flex me-3">
+                    <form class="d-flex" action="/search" method="GET">
+                        <input class="form-control me-2" type="search" name="q" placeholder="მოძებნე მომხმარებელი..." aria-label="Search users">
+                        <button class="btn btn-outline-light" type="submit">ძებნა</button>
+                    </form>
+                </div>
                 <div class="d-flex align-items-center">
                     {% if current_user.is_authenticated %}
                     <div class="dropdown">

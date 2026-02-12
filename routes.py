@@ -995,3 +995,76 @@ def settings():
                          received_requests=received_requests,
                          friends=friends,
                          user_posts=user_posts)
+
+@app.route('/search')
+def search():
+    """
+    Comprehensive user search functionality
+    Searches for users by username and returns their profile, posts, and comments
+    """
+    query = request.args.get('q', '').strip()
+    
+    if not query:
+        flash('გთხოვთ შეიყვანოთ საძიებო სიტყვა', 'warning')
+        return redirect('/')
+    
+    # Search user by name (case-insensitive)
+    user = User.query.filter(
+        User.name.ilike(f'%{query}%')
+    ).first()
+    
+    if not user:
+        flash(f'მომხმარებელი სახელით "{query}" ვერ მოიძებნა', 'info')
+        return render_template('search_results.html', 
+                             user=None, 
+                             query=query,
+                             posts=[],
+                             comments=[])
+    
+    # Get user's posts (ordered by creation date, newest first)
+    posts = Post.query.filter_by(user_id=user.id)\
+                     .order_by(Post.created_at.desc())\
+                     .all()
+    
+    # Get user's post comments (ordered by creation date, newest first)
+    post_comments = PostComment.query.filter_by(user_id=user.id)\
+                                   .order_by(PostComment.created_at.desc())\
+                                   .all()
+    
+    # Get user's mentor comments (ordered by creation date, newest first)
+    mentor_comments = Comment.query.filter_by(user_id=user.id)\
+                                 .order_by(Comment.created_at.desc())\
+                                 .all()
+    
+    # Combine all comments
+    all_comments = post_comments + mentor_comments
+    
+    return render_template('search_results.html', 
+                         user=user, 
+                         query=query,
+                         posts=posts,
+                         comments=all_comments)
+
+@app.route('/api/search')
+def api_search():
+    query = request.args.get('q', '').strip()
+    
+    if not query or len(query) < 2:
+        return jsonify([])
+    
+    # Search users by name (case-insensitive, limit to 10 results)
+    users = User.query.filter(
+        User.name.ilike(f'%{query}%')
+    ).limit(10).all()
+    
+    results = []
+    for user in users:
+        results.append({
+            'id': user.id,
+            'name': user.name,
+            'university': user.university,
+            'faculty': user.faculty,
+            'profile_img': user.profile_img
+        })
+    
+    return jsonify(results)
