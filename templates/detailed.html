@@ -4,26 +4,27 @@
 <div class="container-md py-4">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="text-center mb-4">
-                <img src="/static/images/{{ mentor.image }}" class="img-fluid rounded shadow-sm" alt="{{ mentor.name }}" style="max-width: 250px; max-height: 250px; object-fit: cover;">
-            </div>
-            
             <div class="card shadow-sm border-0 mb-4">
-                <div class="card-body">
-                    <h3 class="card-title mb-1 text-center">{{ mentor.name }}</h3>
-                    <p class="text-muted mb-2 text-center">საგნები: {{ mentor.subject }}</p>
-                    {% if mentor.price %}
-                    <p class="fw-semibold mb-2 text-center">ფასი: {{ mentor.price }} ₾ / სათი</p>
-                    {% endif %}
+                <div class="row g-0 align-items-center">
+                    <div class="col-md-4 text-center p-3">
+                        <img src="/static/images/{{ mentor.image }}" class="img-fluid rounded" alt="{{ mentor.name }}" style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h3 class="card-title mb-1">{{ mentor.name }}</h3>
+                            <p class="text-muted mb-2">საგნები: {{ mentor.subject }}</p>
+                            {% if mentor.price %}
+                            <p class="fw-semibold mb-2">ფასი: {{ mentor.price }} ₾ / სათი</p>
+                            {% endif %}
 
-                    {% if avg_rating %}
-                    <p class="mb-1 small text-muted text-center">
-                        საშუალო რეიტინგი: {{ avg_rating }} / 5
-                        ({{ ratings_count }} შეფასება)
-                    </p>
-                    {% else %}
-                    <p class="mb-1 small text-muted text-center">ჯერ არ აქვს შეფასებები.</p>
-                    {% endif %}
+                            {% if avg_rating %}
+                            <p class="mb-1 small text-muted">
+                                საშუალო რეიტინგი: {{ avg_rating }} / 5
+                                ({{ ratings_count }} შეფასება)
+                            </p>
+                            {% else %}
+                            <p class="mb-1 small text-muted">ჯერ არ აქვს შეფასებები.</p>
+                            {% endif %}
 
 
 
